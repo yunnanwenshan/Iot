@@ -1,0 +1,8 @@
+./config/env.ini
+sql.log
+app.pid
+bin/
+logrus.log
+trace.out
+.idea
+device
