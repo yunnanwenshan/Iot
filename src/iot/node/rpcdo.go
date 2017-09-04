@@ -63,7 +63,6 @@ func (p *Node) message(msg *rpc.PushRequst) {
 		logs.Logger.Debug("[MESSAGE>>>]  to id=", id, " plat=", plat, " Tid=", sendMsg.Tid)
 		if err := p.write(sess.conn, buf); err != nil {
 			logs.Logger.Error("MESSAGE>>> write error:", err)
-			p.store.SaveImMsg(id, plat, []byte(msg.Msg))
 		} else {
 			//创建事务并保存
 			trans := newTransaction()
@@ -76,7 +75,6 @@ func (p *Node) message(msg *rpc.PushRequst) {
 		}
 	} else {
 		logs.Logger.Debug("[>>>MESSAGE]Not find session id=", msg.Id, " plat=", plat)
-		p.store.SaveImMsg(id, plat, []byte(msg.Msg))
 	}
 }
 

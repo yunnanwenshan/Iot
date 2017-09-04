@@ -11,9 +11,7 @@ import (
 
 type Pool struct {
 	m1     sync.Mutex
-	comets map[string]*comet
-	//m2       sync.Mutex
-	//sessions map[string]*session
+	nodes map[string]*node
 }
 
 //用户session
@@ -31,59 +29,59 @@ type item struct {
 	deviceToken string //苹果设备token
 }
 
-type comet struct {
+type node struct {
 	id        string         //comet id
 	rpcClient *rpc.RpcClient //router连接到本comet的RPC客户端句柄
-	tcpAddr   string         //comet对外开放tcp服务地址
-	wsAddr    string         //comet对外开放ws服务地址
-	online    int            //comet在线统计
-	ch        chan int       //comet rpc 状态通知chan
+	tcpAddr   string         //node对外开放tcp服务地址
+	wsAddr    string         //node对外开放ws服务地址
+	online    int            //node在线统计
+	ch        chan int       //node rpc 状态通知chan
 }
 
-func (p *Pool) insertComet(id string, c *comet) {
+func (p *Pool) insertNode(id string, c *node) {
 	p.m1.Lock()
 	defer p.m1.Unlock()
-	p.comets[id] = c
+	p.nodes[id] = c
 }
 
-func (p *Pool) findComet(id string) *comet {
+func (p *Pool) findNode(id string) *node {
 	p.m1.Lock()
 	defer p.m1.Unlock()
-	c := p.comets[id]
+	c := p.nodes[id]
 	return c
 }
 
-func (p *Pool) deleteComet(id string) {
+func (p *Pool) deleteNode(id string) {
 	p.m1.Lock()
 	defer p.m1.Unlock()
-	delete(p.comets, id)
+	delete(p.nodes, id)
 }
 
-func (p *Pool) cometAdd(id string) {
+func (p *Pool) nodeAdd(id string) {
 	p.m1.Lock()
 	defer p.m1.Unlock()
-	c := p.comets[id]
+	c := p.nodes[id]
 	if c != nil {
 		c.online = c.online + 1
 	}
 }
 
-func (p *Pool) cometSub(id string) {
+func (p *Pool) nodeSub(id string) {
 	p.m1.Lock()
 	defer p.m1.Unlock()
-	c := p.comets[id]
+	c := p.nodes[id]
 	if c != nil {
 		c.online = c.online - 1
 	}
 }
 
 //选择负载最低的comet
-func (p *Pool) balancer() *comet {
+func (p *Pool) balancer() *node {
 	p.m1.Lock()
 	defer p.m1.Unlock()
 	minLoad := 0
-	var c *comet
-	for _, v := range p.comets {
+	var c *node
+	for _, v := range p.nodes {
 		if minLoad == 0 {
 			minLoad = v.online
 			c = v

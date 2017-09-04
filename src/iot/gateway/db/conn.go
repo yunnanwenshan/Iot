@@ -24,7 +24,7 @@ var (
 	ConnectDBErr = errors.New("connect db error")
 	UseDBErr     = errors.New("use db error")
 
-	sqlLogFile = "/data/log/ebike-factory-api/sql.log"
+	sqlLogFile = "sql.log"
 	masterDB *xorm.Engine
 	dns string
 )

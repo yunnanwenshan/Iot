@@ -10,13 +10,11 @@ import (
 	"github.com/fvbock/endless"
 
 	"fmt"
-	"strings"
 	"os"
 	"strconv"
 	"runtime"
 	_ "net/http/pprof"
 	"iot/gateway/logger"
-	"iot/gateway/util/qconf"
 	"iot/gateway/http/middleware"
 	"iot/gateway/http/routes"
 )
@@ -42,13 +40,6 @@ func main() {
 
 	r := gin.New()
 
-	//qconf环境初始化(开发环境不要使用qconf)
-	if strings.Compare(env["env"], "debug") != 0 {
-		//测试qconf
-		qconf.Init()
-		//testQconf()
-	}
-
 	//设置中间件
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
@@ -62,7 +53,7 @@ func main() {
 	routes.RegisterRouters(r)
 
 	// Listen and Server in 0.0.0.0:8080
-	endless.ListenAndServe(":13002", r)
+	endless.ListenAndServe(":40001", r)
 	//err := endless.ListenAndServe(":8080", r)
 	//if err != nil {
 	//	fmt.Println("start server fail....")
@@ -115,56 +106,4 @@ func ConfigRuntime() {
 	nuCPU := runtime.NumCPU()
 	runtime.GOMAXPROCS(nuCPU)
 	logger.Infof("Running with %d CPUs\n", nuCPU)
-}
-
-func testQconf()  {
-	conf_key := "/test/t1/t2"
-	host_key := "/test/t1/t2"
-	batch_key := "/test/t1/t2"
-	idc := "rd_codis_test"
-
-	value, err_conf := qconf.GetConf(conf_key, idc)
-	if err_conf != nil{
-		fmt.Println(err_conf)
-	} else {
-		fmt.Printf("value of %v is %v\n", conf_key, value)
-	}
-
-	host, err_host := qconf.GetHost(host_key, idc)
-	if err_host != nil{
-		fmt.Println(err_host)
-	} else {
-		fmt.Printf("one host of %v is %v\n", host_key, host)
-	}
-
-	hosts, err_hosts := qconf.GetAllHost(host_key, idc)
-	if err_hosts != nil{
-		fmt.Println(err_hosts)
-	} else {
-		for i := 0; i < len(hosts); i++ {
-			cur := hosts[i]
-			fmt.Println(cur)
-		}
-	}
-
-	batch_conf, err_batch_conf := qconf.GetBatchConf(batch_key, idc)
-	if err_batch_conf != nil{
-		fmt.Println(err_batch_conf)
-	} else {
-		fmt.Printf("%v\n", batch_conf)
-	}
-
-	batch_keys, err_batch_keys := qconf.GetBatchKeys(batch_key, idc)
-	if err_batch_keys != nil{
-		fmt.Println(err_batch_keys)
-	} else {
-		fmt.Printf("%v\n", batch_keys)
-	}
-
-	version, err_version := qconf.Version()
-	if err_version != nil{
-		fmt.Println(err_version)
-	} else {
-		fmt.Printf("Version : %v\n", version)
-	}
 }

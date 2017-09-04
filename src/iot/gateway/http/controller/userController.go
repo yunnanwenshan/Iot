@@ -16,7 +16,9 @@ var (
 
 func (self UserController) RegisterRouter(r *gin.Engine)  {
 	//需要登录才可以访问的接口
-	//loginRouter := r.Group("app/v1/user", middleware.NeedLogin())
+	//loginRouter := r.Group("app/v1/user/", middleware.NeedLogin())
+	loginRouter := r.Group("app/v1/user/")
+	loginRouter.POST("bind", self.BindDevice)
 	//loginRouter.POST("/user/:user_id", self.UserDetail)
 
 	//不登录也可以访问的接口
@@ -53,4 +55,18 @@ func (self UserController) Login(ctx *gin.Context) {
 	}
 
 	success(ctx, map[string]interface{}{"ticket":token})
+}
+
+//绑定设备
+func (self UserController) BindDevice(ctx *gin.Context) {
+	logger := logger.GetLoggerInstance()
+	logger.Infof("bind device begin.......")
+	user, err := userService.BindUserToDevice("13311588124", "1234", "2")
+	if err != nil {
+		logger.Errorf("bind device fail, err: %s", err.Error())
+		fail(ctx, 1001, "绑定失败")
+		return
+	}
+
+	success(ctx, map[string]interface{}{"ticket": user.Token, "user_id": user.Id, "mobile": user.Mobile})
 }

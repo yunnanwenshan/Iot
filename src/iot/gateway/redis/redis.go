@@ -7,12 +7,13 @@ import (
 	"github.com/polaris1119/config"
 	"fmt"
 	"strings"
-	"iot/gateway/util/qconf"
 	"iot/gateway/logger"
+	"iot/internal/rds"
 )
 
 var (
 	redisInstance *ConnPool
+	redisForDeviceInstance *rds.Storager
 )
 
 // ConnPool is for Cache fd
@@ -38,6 +39,16 @@ func RedisInstance() *ConnPool  {
 	return redisInstance
 }
 
+//获取设备绑定实例
+func RedisForDeviceInstance() *rds.Storager {
+	if redisForDeviceInstance != nil {
+		return redisForDeviceInstance
+	}
+	initRedisForDevice()
+
+	return redisForDeviceInstance
+}
+
 //初始化redis pool
 func Init() {
 	var redisHost string
@@ -45,7 +56,7 @@ func Init() {
 	logger := logger.GetLoggerInstance()
 	redisConfig, err := config.ConfigFile.GetSection("redis")
 	env, _ := config.ConfigFile.GetSection("global")
-	qconfConfig, _ := config.ConfigFile.GetSection("qconf")
+	//qconfConfig, _ := config.ConfigFile.GetSection("qconf")
 	if err != nil {
 		fmt.Printf("redis init fail, err = %v", err)
 		logger.Errorf("redis init fail, err = %v", err)
@@ -59,14 +70,14 @@ func Init() {
 			logger.Errorf("get host fail, ok = %v", ok)
 			panic("get host fail")
 		}
-	} else {
-		redisHostInfo, err := qconf.GetHost(redisConfig["host"], qconfConfig["qconf"])
-		redisHost = redisHostInfo
-		if err != nil {
-			logger.Errorf("qconf parse error, err = %v", err)
-			panic("qconf parse error")
-		}
-		logger.Infof("qconf addr: %s, ip addr: %s", redisConfig["host"], redisHost)
+	//} else {
+		//redisHostInfo, err := qconf.GetHost(redisConfig["host"], qconfConfig["qconf"])
+		//redisHost = redisHostInfo
+		//if err != nil {
+		//	logger.Errorf("qconf parse error, err = %v", err)
+		//	panic("qconf parse error")
+		//}
+		//logger.Infof("qconf addr: %s, ip addr: %s", redisConfig["host"], redisHost)
 	}
 
 	params := map[string]string {
@@ -83,6 +94,31 @@ func Init() {
 
 	logger.Info("redis init successful")
 	fmt.Println("redis init successful")
+}
+
+func initRedisForDevice() {
+	var redisHost string
+	logger := logger.GetLoggerInstance()
+	redisConfig, err := config.ConfigFile.GetSection("redis")
+	env, _ := config.ConfigFile.GetSection("global")
+	//qconfConfig, _ := config.ConfigFile.GetSection("qconf")
+	if err != nil {
+		fmt.Printf("redis init fail, err = %v", err)
+		logger.Errorf("redis init fail, err = %v", err)
+		panic("redis init fail")
+	}
+
+	if strings.Compare(env["env"], "debug") == 0 {
+		redisHostInfo, ok := redisConfig["host"]
+		redisHost = redisHostInfo
+		if !ok {
+			logger.Errorf("get host fail, ok = %v", ok)
+			panic("get host fail")
+		}
+	}
+
+	redisForDeviceInstance = rds.NewStorager(redisHost, "", 0)
+	logger.Infof("redis for device init successful")
 }
 
 func initPool(REDIS map[string]string) *ConnPool {

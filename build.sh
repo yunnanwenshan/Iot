@@ -35,12 +35,15 @@ if [ -e ./router ]; then
 	echo "copy router to ./bin/router"
 fi
 
-go build -o device -race -gcflags "-N -l"  src/iot/device/dev/dev.go
 go build -o gateway-api -race -gcflags "-N -l"  src/iot/gateway/main.go
 
 if [ -e ./gateway-api ]; then
-   mv gateway-api ./bin/gateway-api
+     mv gateway-api ./bin/
+     echo "copy gateway-api to ./bin/gateway-api"
 fi
+
+go build -o device -race -gcflags "-N -l"  src/iot/device/dev/dev.go
+echo "device build finished"
 
 export GOPATH="$OLDGOPATH"
 export GOBIN="$OLDGOBIN"

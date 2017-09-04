@@ -22,15 +22,15 @@ const (
 )
 
 var (
-	logFile = "/data/log/ebike-factory-api/logrus.log"
-	stdLogFile = "/data/log/ebike-factory-api/std.log"
+	logFile = "logrus.log"
+	stdLogFile = "std.log"
 )
 
 var _log = New()
 
 func init() {
 	//createLogFile()
-	createStdFile();
+	//createStdFile();
 }
 
 //创建stdlogfile文件
@@ -81,7 +81,7 @@ func GetLoggerInstance() *logger {
 	isExist := Exist(logFile)
 	if isExist == false {
 		createLogFile()
-		createStdFile()
+		//createStdFile()
 	}
 
 	return _log;

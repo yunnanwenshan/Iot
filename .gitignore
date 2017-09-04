@@ -1,4 +1,5 @@
 ./config/env.ini
+std.log
 sql.log
 app.pid
 bin/

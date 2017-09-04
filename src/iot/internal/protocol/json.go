@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"iot/internal/logs"
 )
 
 func packJson(v interface{}) []byte {
@@ -23,7 +22,7 @@ func packJson(v interface{}) []byte {
 		body["data"] = data
 		buf, err = json.Marshal(&body)
 		if err != nil {
-			logs.Logger.Error(err)
+			//logs.Logger.Error(err)
 		}
 	case *Resp:
 		msg := v.(*Resp)
@@ -33,7 +32,7 @@ func packJson(v interface{}) []byte {
 		body["data"] = data
 		buf, err = json.Marshal(&body)
 		if err != nil {
-			logs.Logger.Error(err)
+			//logs.Logger.Error(err)
 		}
 	case *Kick:
 		msg := v.(*Kick)
@@ -43,10 +42,10 @@ func packJson(v interface{}) []byte {
 		body["data"] = data
 		buf, err = json.Marshal(&body)
 		if err != nil {
-			logs.Logger.Error(err)
+			//logs.Logger.Error(err)
 		}
 	}
-	logs.Logger.Debug("packJson=", string(buf[:]))
+	//logs.Logger.Debug("packJson=", string(buf[:]))
 	return []byte(Encode(buf))
 }
 
@@ -63,7 +62,7 @@ func Encode(buff []byte) string {
 func Decode(buff []byte) ([]byte, error) {
 	b, err := base64.StdEncoding.DecodeString(string(buff))
 	if err != nil {
-		logs.Logger.Error("Decode ws on decode base64 error ", err)
+		//logs.Logger.Error("Decode ws on decode base64 error ", err)
 		return b, err
 	}
 	CodecDecode(b, len(b), ENCODE_LOOP_XOR)
@@ -77,7 +76,7 @@ func UnPackJson(buffer []byte) (interface{}, error) {
 	}
 	var body map[string]interface{}
 	if err := json.Unmarshal(b, &body); err != nil {
-		logs.Logger.Error(err, " msg=", string(b))
+		//logs.Logger.Error(err, " msg=", string(b))
 		return nil, err
 	}
 	cmd := int(body["cmd"].(float64))

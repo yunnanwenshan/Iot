@@ -53,7 +53,7 @@ func (p *Router) Init() {
 	p.cometExit = make(chan string)
 
 	p.pool = new(Pool)
-	p.pool.comets = make(map[string]*comet)
+	p.pool.nodes = make(map[string]*node)
 	//	p.pool.sessions = make(map[string]*session)
 
 	//REDIS
@@ -90,8 +90,8 @@ func (p *Router) Start() {
 		for {
 			select {
 			case id := <-p.cometExit:
-				p.pool.deleteComet(id)
-				p.store.OfflineComet(id)
+				p.pool.deleteNode(id)
+				p.store.OfflineNode(id)
 			}
 		}
 	}()
@@ -122,7 +122,7 @@ func (p *Router) stat() {
 	for {
 		select {
 		case <-t.C:
-			logs.Logger.Debug("Registered ", len(p.pool.comets), " comets with ", p.store.SessionCount(), " sessions")
+			logs.Logger.Debug("Registered ", len(p.pool.nodes), " comets with ", p.store.SessionCount(), " sessions")
 		}
 	}
 }

@@ -19,11 +19,11 @@ func (p *Router) RpcAsyncHandle(request interface{}) {
 			msg := request.(*rpc.StateNotify)
 			logs.Logger.Info("[rpc] StateNotify id=", msg.Id, " plat=", msg.Termtype, " state=", msg.State, " comet=", msg.NodeId)
 			if msg.State == 0 { //offline
-				sess := p.store.FindSessions(msg.Id)
+				sess, _ := p.store.FindSessions(msg.Id)
 				if sess != nil {
-					sess.CometId = msg.NodeId
+					sess.NodeId = msg.NodeId
 					for _, it := range sess.Sess {
-						p.pool.cometSub(msg.NodeId)
+						p.pool.nodeSub(msg.NodeId)
 						if it.Plat == msg.Termtype && it.AuthCode == msg.Token {
 							it.Online = false
 							return
@@ -32,10 +32,10 @@ func (p *Router) RpcAsyncHandle(request interface{}) {
 					p.store.SaveSessions(sess)
 				}
 			} else if msg.State == 1 {
-				sess := p.store.FindSessions(msg.Id)
+				sess, _ := p.store.FindSessions(msg.Id)
 				if sess != nil {
-					sess.CometId = msg.NodeId
-					p.pool.cometAdd(msg.NodeId)
+					sess.NodeId = msg.NodeId
+					p.pool.nodeAdd(msg.NodeId)
 					for _, it := range sess.Sess {
 						if it.Plat == msg.Termtype && it.AuthCode == msg.Token {
 							it.Online = true
@@ -67,7 +67,7 @@ func (p *Router) RpcSyncHandle(request interface{}) int {
 			msg := request.(*rpc.AuthRequest)
 			logs.Logger.Info("[rpc] Auth Receive id=", msg.Id, " termtype=", msg.Termtype, " code=", msg.Code)
 			{
-				sess := p.store.FindSessions(msg.Id)
+				sess, _ := p.store.FindSessions(msg.Id)
 				if sess == nil {
 					logs.Logger.Error("[rpc] Auth Failed Not Find session id=", msg.Id, " termtype=", msg.Termtype, " code=", msg.Code)
 					return code
@@ -89,7 +89,7 @@ func (p *Router) RpcSyncHandle(request interface{}) int {
 		{
 			msg := request.(*rpc.NodeRegister)
 			logs.Logger.Info("[rpc] comet register comet=", msg.NodeId, " rpc=", msg.RpcAddr, " tcp=", msg.TcpAddr)
-			c := p.pool.findComet(msg.NodeId)
+			c := p.pool.findNode(msg.NodeId)
 			if c != nil {
 				c.id = msg.NodeId
 				c.tcpAddr = msg.TcpAddr
@@ -100,15 +100,15 @@ func (p *Router) RpcSyncHandle(request interface{}) int {
 				client, err := p.NewRpcClient(c.id, msg.RpcAddr, c.ch)
 				if err != nil {
 					logs.Logger.Error("[rpc] connect to comet ", msg.RpcAddr, " error ", err)
-					p.pool.deleteComet(msg.NodeId)
+					p.pool.deleteNode(msg.NodeId)
 					return code
 				}
 				c.rpcClient = client
 				//替换原RPC CLIENT
-				p.pool.insertComet(msg.NodeId, c)
+				p.pool.insertNode(msg.NodeId, c)
 				p.checkRpc(c)
 			} else {
-				c = new(comet)
+				c = new(node)
 				c.id = msg.NodeId
 				c.tcpAddr = msg.TcpAddr
 				c.ch = make(chan int, 1)
@@ -119,7 +119,7 @@ func (p *Router) RpcSyncHandle(request interface{}) int {
 					return code
 				}
 				c.rpcClient = client
-				p.pool.insertComet(msg.NodeId, c)
+				p.pool.insertNode(msg.NodeId, c)
 				p.checkRpc(c)
 			}
 			code = rpc.RPC_RET_SUCCESS
@@ -146,7 +146,7 @@ func (p *Router) RpcSyncHandle(request interface{}) int {
 	return code
 }
 
-func (p *Router) checkRpc(c *comet) {
+func (p *Router) checkRpc(c *node) {
 	go func(ch chan int) {
 		for {
 			select {
@@ -156,7 +156,7 @@ func (p *Router) checkRpc(c *comet) {
 					{
 						err := c.rpcClient.ReConnect()
 						if err != nil {
-							p.pool.deleteComet(c.id)
+							p.pool.deleteNode(c.id)
 							logs.Logger.Critical("[rpc]reconnect to comet failed ", err)
 							return
 						}

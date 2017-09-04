@@ -39,7 +39,7 @@ func GenerateToken(userId string) (jwtToken string, err error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	jwtToken, err = token.SignedString(tokenSig)
-	logger.Infof("generate jwt: %s, %s", jwtToken, err.Error())
+	logger.Infof("generate jwt: %s, userid: %s", jwtToken, userId)
 	return
 }
 

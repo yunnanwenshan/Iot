@@ -49,9 +49,9 @@ func (p *Router) loadDispatcher(w http.ResponseWriter, r *http.Request) {
 
 //balancer HTTP接口 根据id返回socket地址
 func (p *Router) balancer(id string) string {
-	sess := p.store.FindSessions(id)
+	sess, _ := p.store.FindSessions(id)
 	if sess != nil {
-		c := p.pool.findComet(sess.CometId)
+		c := p.pool.findNode(sess.NodeId)
 		if c != nil {
 			return c.tcpAddr
 		}
