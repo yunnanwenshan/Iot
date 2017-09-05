@@ -21,7 +21,7 @@ type Router struct {
 
 	//负载路由
 	httpBindAddr string
-	cometExit    chan string //cometId exit channel
+	nodeExit    chan string //nodeId exit channel
 	pool         *Pool
 
 	//离线消息
@@ -50,7 +50,7 @@ func (p *Router) Init() {
 		logs.Logger.Debug("----http addr=", p.httpBindAddr, " cache=", p.maxRpcInFight)
 	}
 
-	p.cometExit = make(chan string)
+	p.nodeExit = make(chan string)
 
 	p.pool = new(Pool)
 	p.pool.nodes = make(map[string]*node)
@@ -85,11 +85,11 @@ func (p *Router) Start() {
 	}()
 	p.rpcServer = rpc.NewRpcServer(p.routerRpcAddr, p.maxRpcInFight, p.RpcSyncHandle, p.RpcAsyncHandle)
 
-	//处理comet异常中断 清除comet以及comet上注册的用户
+	//处理node异常中断 清除node以及node上注册的用户
 	go func() {
 		for {
 			select {
-			case id := <-p.cometExit:
+			case id := <-p.nodeExit:
 				p.pool.deleteNode(id)
 				p.store.OfflineNode(id)
 			}

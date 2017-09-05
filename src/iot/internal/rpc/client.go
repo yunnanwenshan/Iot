@@ -74,6 +74,7 @@ func (p *RpcClient) StartPing() {
 					p.status <- 0
 					return
 				}
+				logs.Logger.Debug("[ping] router >>>> node or node >>>> router")
 			}
 		}
 	}(p)
@@ -207,5 +208,6 @@ func (p *RpcClient) Ping() error {
 	if respone.Code != RPC_RET_SUCCESS {
 		return ERROR_RESPONSE
 	}
+
 	return nil
 }

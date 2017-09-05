@@ -2,7 +2,6 @@ package rds
 
 import (
 	"encoding/json"
-	//"iot/internal/logs"
 	"sync"
 
 	"github.com/hoisie/redis"

@@ -172,12 +172,12 @@ func (p *Node) checkRpc() {
 						}
 					}
 				case 1:
-					//comet启动时注册到router
+					//node启动时注册到router
 					{
 						p.rpcCli.StartPing()
-						logs.Logger.Debug("register to router cometId=", p.nodeId, " tcp=", p.uaTcpConnectAddr, " rpc=", p.cometRpcConnectAddr)
+						logs.Logger.Debug("register to router nodeId=", p.nodeId, " tcp=", p.uaTcpConnectAddr, " rpc=", p.cometRpcConnectAddr)
 						if err := p.rpcCli.Register(p.nodeId, p.uaTcpConnectAddr, p.cometRpcConnectAddr); err != nil {
-							logs.Logger.Critical("comet register to router error ", err)
+							logs.Logger.Critical("node register to router error ", err)
 						}
 					}
 				}
