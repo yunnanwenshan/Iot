@@ -16,6 +16,7 @@ import (
 	"github.com/parnurzeal/gorequest"
 	"github.com/bitly/go-simplejson"
 	"encoding/json"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -57,39 +58,65 @@ func main() {
 	go readRuntime(conn)
 
 	//设备与帐号绑定
-	params := map[string]interface{}{}
+	uid, ticket, err := bindUserToDevice()
+	if err != nil {
+		fmt.Println("bind device fail, err: ", err)
+		panic("bind device fail")
+	}
+
+	register(conn, uid, ticket, deviceType)
+
+	select {}
+}
+
+func bindUserToDevice() (string, string, error) {
+	params := map[string]interface{}{
+		"user_name": "10000000000",
+		"password": "1234",
+		"device_sn": "2",
+	}
 	request := gorequest.New()
 	resp, body, errs := request.Post("http://127.0.0.1:40001/app/v1/user/bind").
 		Set("Content-Type", "application/json").
 		Send(params).
 		End()
 
+	fmt.Println("call interface fail, body:", body, " resp: ,", resp, " error:", errs)
+
 	if errs != nil {
 		fmt.Println("call interface fail, body:", body, " resp: ,", resp, " error:", errs)
-		panic(errs)
+		return "", "", errs[0]
 	}
 
 	jsonInstance, err := simplejson.NewJson([]byte(body))
 	if err != nil {
 		fmt.Println("err: ", err.Error())
-		panic(err.Error())
+		return "", "", err
+	}
+
+	error := jsonInstance.Get("error")
+	if error.Interface() != nil {
+		errorsObj := error.MustMap()
+		code, ok := errorsObj["code"].(json.Number)
+		if ok && code.String() != "0" {
+			fmt.Println("code: ", code)
+			return "", "", errors.New("绑定设备失败")
+		}
 	}
 
 	jsonObj := jsonInstance.MustMap()
 	uid, ok := jsonObj["user_id"].(json.Number)
 	if !ok {
 		fmt.Println("user_id type assert fail, ok: ", ok)
-		panic("type assert fail")
+		return "", "", errors.New("type assert fail")
 	}
 	ticket, ok := jsonObj["ticket"].(string)
 	if !ok {
 		fmt.Println("ticket assert fail, ok: ", ok)
-		panic("type assert fail")
+		return "", "", errors.New("type assert fail 1")
 	}
 
-	register(conn, uid.String(), ticket, deviceType)
-
-	select {}
+	return uid.String(), ticket, nil
 }
 
 func service(conn net.Conn) {

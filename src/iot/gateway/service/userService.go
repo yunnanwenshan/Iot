@@ -8,6 +8,7 @@ import (
 	"iot/internal/rds"
 	"strconv"
 	"math/rand"
+	"github.com/pkg/errors"
 )
 
 type UserService struct {}
@@ -46,15 +47,26 @@ func (userService *UserService) Login(mobile string, password string) error  {
 }
 
 // 用户详情
-func (userService *UserService) UserDetail(userId int64) *model.User {
-	var user = model.User{Id: 1}
+func (userService *UserService) UserDetail(userId uint64) *model.User {
+	user := model.User{
+		Id: userId,
+	}
 	db.StdMasterDB().Get(user)
 
 	return &user;
 }
 
+//根据手机号查询用户信息
+func (userService *UserService) UserDetailByUserName(userName string) *model.User {
+	user := model.User{
+		Mobile: userName,
+	}
+	db.StdMasterDB().Get(user)
+	return &user
+}
+
 //设备与帐号绑定
-func (userservice *UserService) BindUserToDevice(userName string, password string, deviceNum string) (*model.User, error) {
+func (userService *UserService) BindUserToDevice(userName string, password string, deviceNum int) (*model.User, error) {
 	logger := logger.GetLoggerInstance()
 	user := new(model.User)
 	user.Id = 1001;
@@ -75,7 +87,7 @@ func (userservice *UserService) BindUserToDevice(userName string, password strin
 			AuthCode: token,
 			Login: true,
 			Online: true,
-			Plat: 2,
+			Plat: deviceNum,
 		}
 		sessiones := rds.Sessions{
 			Id: uid,
@@ -85,6 +97,10 @@ func (userservice *UserService) BindUserToDevice(userName string, password strin
 	} else {
 		session := ss.Sess[0]
 		session.AuthCode = token
+		if session.Plat != deviceNum {
+			logger.Infof("the user binded to other device")
+			return nil, errors.New("the user binded to other device")
+		}
 		redisInstance.SaveSessions(ss)
 	}
 

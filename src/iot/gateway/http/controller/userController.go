@@ -6,6 +6,8 @@ import (
 	"iot/gateway/util/serverToken"
 	//"api/http/middleware"
 	"iot/gateway/service"
+	"iot/gateway/model"
+	"strconv"
 )
 
 type UserController struct {}
@@ -59,9 +61,22 @@ func (self UserController) Login(ctx *gin.Context) {
 
 //绑定设备
 func (self UserController) BindDevice(ctx *gin.Context) {
+	var userBind model.UserBind
 	logger := logger.GetLoggerInstance()
 	logger.Infof("bind device begin.......")
-	user, err := userService.BindUserToDevice("13311588124", "1234", "2")
+	err := ctx.BindJSON(&userBind)
+	if err != nil {
+		logger.Infof("get params fail, err: %s", err.Error())
+		fail(ctx, 1002, "获取参数失败")
+		return
+	}
+	deviceNum , err := strconv.Atoi(userBind.DeviceSn)
+	if err != nil {
+		logger.Infof("get params fail 1, err: %s", err.Error())
+		fail(ctx, 1003, "获取参数失败")
+		return
+	}
+	user, err := userService.BindUserToDevice(userBind.UserName, userBind.Password, deviceNum)
 	if err != nil {
 		logger.Errorf("bind device fail, err: %s", err.Error())
 		fail(ctx, 1001, "绑定失败")
