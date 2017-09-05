@@ -104,6 +104,8 @@ func (p *Storager) SessionNode(id string) string {
 }
 
 func (p *Storager) SessionCount() int {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
 	return len(p.memStore)
 }
 

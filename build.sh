@@ -42,7 +42,7 @@ if [ -e ./gateway-api ]; then
      echo "copy gateway-api to ./bin/gateway-api"
 fi
 
-go build -o device -race -gcflags "-N -l"  src/iot/device/dev/dev.go
+go build -o device -race -gcflags "-N -l"  src/iot/dev/device.go
 echo "device build finished"
 
 export GOPATH="$OLDGOPATH"
