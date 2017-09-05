@@ -1,7 +1,6 @@
 package rpc
 
 import (
-	"errors"
 	"iot/internal/logs"
 	"net/rpc"
 	"sync"
@@ -80,10 +79,10 @@ func (p *RpcClient) StartPing() {
 	}(p)
 }
 
-//Register comet登记
-func (p *RpcClient) Register(cometId, tcpAddr, rpcAddr string) error {
+//Register node登记
+func (p *RpcClient) Register(nodeId, tcpAddr, rpcAddr string) error {
 	var request NodeRegister
-	request.NodeId = cometId
+	request.NodeId = nodeId
 	request.TcpAddr = tcpAddr
 	request.RpcAddr = rpcAddr
 
@@ -173,41 +172,57 @@ func (p *RpcClient) Kick(id string, plat int, token string, reason int) error {
 	return nil
 }
 
-//Push 下发消息
-func (p *RpcClient) Push(msgType int, id string, termtype int, iosToken string, flag int, msg string) error {
-	var request PushRequst
-	request.Tp = msgType
-	request.Flag = flag
-	request.Id = id
-	request.Termtype = termtype
-	request.AppleToken = iosToken
-	request.Msg = msg
-
-	var respone Response
-
-	err := p.rpcClient.Call("RpcServer.Push", &request, &respone)
-	if err != nil {
-		logs.Logger.Error("[rpc client] RpcServer.Push ", err)
-		return err
-	}
-	if respone.Code != 0 {
-		return errors.New("PUSH ERROR")
-	}
-	return nil
-}
+////Push 下发消息
+//func (p *RpcClient) Push(msgType int, id string, termtype int, iosToken string, flag int, msg string) error {
+//	var request PushRequst
+//	request.Tp = msgType
+//	request.Flag = flag
+//	request.Id = id
+//	request.Termtype = termtype
+//	request.AppleToken = iosToken
+//	request.Msg = msg
+//
+//	var respone Response
+//
+//	err := p.rpcClient.Call("RpcServer.Push", &request, &respone)
+//	if err != nil {
+//		logs.Logger.Error("[rpc client] RpcServer.Push ", err)
+//		return err
+//	}
+//	if respone.Code != 0 {
+//		return errors.New("PUSH ERROR")
+//	}
+//	return nil
+//}
 
 //Ping heartbeat
 func (p *RpcClient) Ping() error {
 	var request Ping
-	var respone Response
+	var response Response
 
-	if err := p.rpcClient.Call("RpcServer.Ping", &request, &respone); err != nil {
+	if err := p.rpcClient.Call("RpcServer.Ping", &request, &response); err != nil {
 		logs.Logger.Error("[rpc client] RpcServer.Ping ", err)
 		return err
 	}
-	if respone.Code != RPC_RET_SUCCESS {
+	if response.Code != RPC_RET_SUCCESS {
 		return ERROR_RESPONSE
 	}
 
 	return nil
+}
+
+func (p *RpcClient) GetNode() (int, error) {
+	var request NodeInfoRequest
+	var response NodeInfoResponse
+
+	if err := p.rpcClient.Call("RpcServer.NodeInfo", &request, &response); err != nil {
+		logs.Logger.Error("[rpc client] RpcServer.NodeInfo ", err)
+		return -3, err
+	}
+
+	if response.Code != RPC_RET_SUCCESS {
+		return -3, ERROR_RESPONSE
+	}
+
+	return response.NodeId, nil
 }

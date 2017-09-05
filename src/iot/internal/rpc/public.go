@@ -92,5 +92,16 @@ type Ping struct {
 
 //公共应答
 type Response struct {
-	Code int //0-成功 -1-失败
+	Code int //0 成功, -1 失败
+}
+
+// node api获取node节点信息
+// 方向: node api(rpc client)->router(rpc server)
+type NodeInfoRequest struct {
+	Uid string
+}
+
+type NodeInfoResponse struct {
+	Response
+	NodeId int
 }

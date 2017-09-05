@@ -16,11 +16,12 @@ var (
 	userService = new(service.UserService)
 )
 
-func (self UserController) RegisterRouter(r *gin.Engine)  {
+func (self *UserController) RegisterRouter(r *gin.Engine)  {
 	//需要登录才可以访问的接口
 	//loginRouter := r.Group("app/v1/user/", middleware.NeedLogin())
 	loginRouter := r.Group("app/v1/user/")
 	loginRouter.POST("bind", self.BindDevice)
+	loginRouter.POST("login", self.Login)
 	//loginRouter.POST("/user/:user_id", self.UserDetail)
 
 	//不登录也可以访问的接口
@@ -29,7 +30,7 @@ func (self UserController) RegisterRouter(r *gin.Engine)  {
 }
 
 // 用户详情
-func (self UserController) UserDetail(ctx *gin.Context) {
+func (self *UserController) UserDetail(ctx *gin.Context) {
 	logger := logger.GetLoggerInstance()
 	userId := ctx.Param("user_id")
 	logger.Infof("userId: %d, test===============", userId)
@@ -38,7 +39,7 @@ func (self UserController) UserDetail(ctx *gin.Context) {
 }
 
 // 登录接口
-func (self UserController) Login(ctx *gin.Context) {
+func (self *UserController) Login(ctx *gin.Context) {
 	logger := logger.GetLoggerInstance()
 	token, err := serverToken.GenerateToken(string(98))
 
@@ -60,7 +61,7 @@ func (self UserController) Login(ctx *gin.Context) {
 }
 
 //绑定设备
-func (self UserController) BindDevice(ctx *gin.Context) {
+func (self *UserController) BindDevice(ctx *gin.Context) {
 	var userBind model.UserBind
 	logger := logger.GetLoggerInstance()
 	logger.Infof("bind device begin.......")

@@ -3,6 +3,7 @@ package main
 import (
 	"iot/internal/logs"
 	"iot/internal/rpc"
+	"strconv"
 )
 
 //RpcAsyncHandle
@@ -141,6 +142,28 @@ func (p *Router) RpcSyncHandle(request interface{}) int {
 			//	return code
 			//}
 			code = rpc.RPC_RET_SUCCESS
+		}
+	case *rpc.NodeInfoRequest:
+		{
+			msg := request.(*rpc.NodeInfoRequest)
+			logs.Logger.Infof("[rpc] node info, userId=", msg.Uid)
+			sessions, err := p.store.FindSessions(msg.Uid)
+			if err != nil {
+				//该用户没有绑定任何设备
+				logs.Logger.Errorf("[rpc] find session failed, err: %s", err.Error())
+				return -1
+			}
+
+			for _, sess := range sessions.Sess  {
+				if sess.Id == msg.Uid && sess.Online == true {
+					logs.Logger.Debugf("[rpc] find node id: %s", sessions.NodeId)
+					nodeId, _ := strconv.Atoi(sessions.NodeId)
+					return nodeId
+				}
+			}
+
+			//该用户没有绑定任何设备或设备不在线
+			return -2;
 		}
 	}
 	return code

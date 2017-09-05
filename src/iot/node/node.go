@@ -15,14 +15,14 @@ import (
 
 type Node struct {
 	//与router交互
-	nodeId       string //comet id 手工配置
+	nodeId       string //node id 手工配置
 	routerRpcAddr string //router RPC服务地址
 	rpcCli        *rpc.RpcClient
 	rpcStateChan  chan int //RPC链接状态通知通道
 
-	//comet本身信息
-	cometRpcBindAddr    string //comet RPC监听服务地址
-	cometRpcConnectAddr string //comet RPC连接服务地址
+	//node本身信息
+	nodeRpcBindAddr    string //node RPC监听服务地址
+	nodeRpcConnectAddr string //node RPC连接服务地址
 	rpcSrv              *rpc.RpcServer
 	maxRpcInFight       int //数据缓冲大小
 
@@ -59,14 +59,14 @@ func (p *Node) Init() {
 
 	//node as rpc server
 	{
-		p.cometRpcBindAddr = conf.GetValue("node", "rpcBindAddr")
-		p.cometRpcConnectAddr = conf.GetValue("node", "rpcConnectAddr")
+		p.nodeRpcBindAddr = conf.GetValue("node", "rpcBindAddr")
+		p.nodeRpcConnectAddr = conf.GetValue("node", "rpcConnectAddr")
 		s := conf.GetValue("node", "rpcServerCache")
 		p.maxRpcInFight, _ = strconv.Atoi(s)
-		logs.Logger.Debug("----comet rpc addr=", p.cometRpcBindAddr, " cache=", p.maxRpcInFight)
+		logs.Logger.Debug("----comet rpc addr=", p.nodeRpcBindAddr, " cache=", p.maxRpcInFight)
 	}
 
-	//tcp&websocket server
+	//tcp server
 	{
 		p.uaTcpBindAddr = conf.GetValue("node", "tcpBindAddr")
 		p.uaTcpConnectAddr = conf.GetValue("node", "tcpConnectAddr")
@@ -118,8 +118,8 @@ func (p *Node) Start() {
 	}()
 	//rpc server
 	{
-		logs.Logger.Debug("start rpc server listen on ", p.cometRpcBindAddr)
-		p.rpcSrv = rpc.NewRpcServer(p.cometRpcBindAddr, p.maxRpcInFight, p.RpcSyncHandle, p.RpcAsyncHandle)
+		logs.Logger.Debug("start rpc server listen on ", p.nodeRpcBindAddr)
+		p.rpcSrv = rpc.NewRpcServer(p.nodeRpcBindAddr, p.maxRpcInFight, p.RpcSyncHandle, p.RpcAsyncHandle)
 	}
 
 	//rpc client
@@ -175,8 +175,8 @@ func (p *Node) checkRpc() {
 					//node启动时注册到router
 					{
 						p.rpcCli.StartPing()
-						logs.Logger.Debug("register to router nodeId=", p.nodeId, " tcp=", p.uaTcpConnectAddr, " rpc=", p.cometRpcConnectAddr)
-						if err := p.rpcCli.Register(p.nodeId, p.uaTcpConnectAddr, p.cometRpcConnectAddr); err != nil {
+						logs.Logger.Debug("register to router nodeId=", p.nodeId, " tcp=", p.uaTcpConnectAddr, " rpc=", p.nodeRpcConnectAddr)
+						if err := p.rpcCli.Register(p.nodeId, p.uaTcpConnectAddr, p.nodeRpcConnectAddr); err != nil {
 							logs.Logger.Critical("node register to router error ", err)
 						}
 					}

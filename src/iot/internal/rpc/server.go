@@ -50,7 +50,7 @@ func (p *RpcServer) startRpcServer(addr string) error {
 	return err
 }
 
-//comet注册
+//node注册
 func (p *RpcServer) Register(request *NodeRegister, response *Response) error {
 	response.Code = p.syncHandle(request)
 	return nil
@@ -81,15 +81,21 @@ func (p *RpcServer) Kick(request *KickRequst, response *Response) error {
 	return nil
 }
 
-//推送
-func (p *RpcServer) Push(request *PushRequst, response *Response) error {
-	p.dataChan <- request
-	response.Code = 0
-	return nil
-}
+////推送
+//func (p *RpcServer) Push(request *PushRequst, response *Response) error {
+//	p.dataChan <- request
+//	response.Code = 0
+//	return nil
+//}
 
 //心跳
 func (p *RpcServer) Ping(request *Ping, response *Response) error {
 	response.Code = 0
+	return nil
+}
+
+func (p *RpcServer) NodeInfo(request *NodeInfoRequest, response *NodeInfoResponse) error {
+	response.Code = 0;
+	response.NodeId = p.syncHandle(request)
 	return nil
 }
