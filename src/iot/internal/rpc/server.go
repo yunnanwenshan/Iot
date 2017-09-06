@@ -8,7 +8,7 @@ import (
 
 type RpcServer struct {
 	dataChan    chan interface{}
-	syncHandle  func(interface{}) int //同步接口,返回处理结果码 处理comet注册
+	syncHandle  func(interface{}) int //同步接口,返回处理结果码 处理Node注册
 	asyncHandle func(interface{})     //异步接口 处理业务数据
 }
 

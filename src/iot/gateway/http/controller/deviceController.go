@@ -16,7 +16,8 @@ func (self *DeviceController) RegisterRouter(r *gin.Engine) {
 //获取设备信息
 func (self *DeviceController) DeviceInfo(ctx *gin.Context) {
 	logger := logger.GetLoggerInstance()
-	nodeId, err := rpc.Nodeapi.GetNode()
+	rpcClient := rpc.GetNodeApiInstance()
+	nodeId, err := rpcClient.GetNode("1001")
 	if err != nil {
 		logger.Errorf("get node number failed, err: %s", err.Error())
 		fail(ctx, 3001, "获取节点信息失败")

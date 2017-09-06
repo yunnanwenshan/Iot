@@ -17,7 +17,7 @@ type Pool struct {
 //用户session
 type session struct {
 	id      string
-	cometId string //用户所附着的comet
+	nodeId string //用户所附着的nodeId
 	item    []*item
 }
 
@@ -26,14 +26,13 @@ type item struct {
 	online      bool   //推送接口是否在线
 	authCode    string //业务层鉴权码
 	login       bool   //业务层是否已经登录
-	deviceToken string //苹果设备token
+	deviceToken string //设备token
 }
 
 type node struct {
 	id        string         //comet id
-	rpcClient *rpc.RpcClient //router连接到本comet的RPC客户端句柄
+	rpcClient *rpc.RpcClient //router连接到本node的RPC客户端句柄
 	tcpAddr   string         //node对外开放tcp服务地址
-	wsAddr    string         //node对外开放ws服务地址
 	online    int            //node在线统计
 	ch        chan int       //node rpc 状态通知chan
 }

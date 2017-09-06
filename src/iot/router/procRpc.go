@@ -146,7 +146,7 @@ func (p *Router) RpcSyncHandle(request interface{}) int {
 	case *rpc.NodeInfoRequest:
 		{
 			msg := request.(*rpc.NodeInfoRequest)
-			logs.Logger.Infof("[rpc] node info, userId=", msg.Uid)
+			logs.Logger.Infof("[rpc] node info, userId=%s", msg.Uid)
 			sessions, err := p.store.FindSessions(msg.Uid)
 			if err != nil {
 				//该用户没有绑定任何设备
@@ -154,7 +154,7 @@ func (p *Router) RpcSyncHandle(request interface{}) int {
 				return -1
 			}
 
-			for _, sess := range sessions.Sess  {
+			for _, sess := range sessions.Sess {
 				if sess.Id == msg.Uid && sess.Online == true {
 					logs.Logger.Debugf("[rpc] find node id: %s", sessions.NodeId)
 					nodeId, _ := strconv.Atoi(sessions.NodeId)

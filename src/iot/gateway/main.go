@@ -19,8 +19,6 @@ import (
 	"iot/gateway/http/routes"
 )
 
-
-
 func main() {
 	//获取进程号
 	GetPid()

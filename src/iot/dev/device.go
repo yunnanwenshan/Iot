@@ -219,7 +219,7 @@ func resp(conn net.Conn, msgType int, tid uint32, code int) error {
 }
 
 func pingRuntime(conn net.Conn) {
-	t := time.NewTicker(time.Second * 3)
+	t := time.NewTicker(time.Second * 10)
 	for {
 		select {
 		case <-t.C:

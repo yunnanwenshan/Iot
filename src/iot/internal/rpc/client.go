@@ -63,7 +63,7 @@ func (p *RpcClient) Close() error {
 //StartPing start heartbeat with the ticker 5 s
 func (p *RpcClient) StartPing() {
 	go func(client *RpcClient) {
-		tk := time.NewTicker(time.Second * 5)
+		tk := time.NewTicker(time.Second * 10)
 		for {
 			select {
 			case <-tk.C:
@@ -211,10 +211,13 @@ func (p *RpcClient) Ping() error {
 	return nil
 }
 
-func (p *RpcClient) GetNode() (int, error) {
+func (p *RpcClient) GetNodeByUid(uid string) (int, error) {
 	var request NodeInfoRequest
 	var response NodeInfoResponse
 
+	request.Uid = uid
+
+	logs.Logger.Debug("get node begin......")
 	if err := p.rpcClient.Call("RpcServer.NodeInfo", &request, &response); err != nil {
 		logs.Logger.Error("[rpc client] RpcServer.NodeInfo ", err)
 		return -3, err
